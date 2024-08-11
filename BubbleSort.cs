@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace SortVisualizer
 {
+    // Class for the Bubble Sort algorithm
     internal class BubbleSort : ISortEngine
     {
+        // Initialization
         private int[] numbers;
         private Graphics graphics;
         private int maxValue;
@@ -15,12 +17,14 @@ namespace SortVisualizer
         private SolidBrush blackBrush = new SolidBrush(Color.Black);
         private SolidBrush whiteBrush = new SolidBrush(Color.White);
 
+        // Main sort method
         public void Sort(int[] numbers_in, Graphics graphics_in, int maxValue_in)
         {
             numbers = numbers_in;
             graphics = graphics_in;
             maxValue = maxValue_in;
 
+            // Bubble sort algorithm
             while(!sorted)
             {
                 sorted = true;
@@ -35,6 +39,7 @@ namespace SortVisualizer
             }
         }
 
+        // Helper method to swap two elements in the array and draw the changes
         private void Swap(int i, int j)
         { 
             int temp = numbers[i];

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace SortVisualizer
 {
+    // Interface for sorting algorithms
     internal interface ISortEngine
     {
         void Sort(int[] numbers, Graphics graphics, int maxValue);
