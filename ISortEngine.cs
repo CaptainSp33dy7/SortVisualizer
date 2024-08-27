@@ -9,6 +9,6 @@ namespace SortVisualizer
     // Interface for sorting algorithms
     internal interface ISortEngine
     {
-        void Sort(int[] numbers, Graphics graphics, int maxValue);
+        void Sort(int[] numbers, Action<int, int> updateCallback);
     }
 }

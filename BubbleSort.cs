@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,18 +12,12 @@ namespace SortVisualizer
     {
         // Initialization
         private int[] numbers;
-        private Graphics graphics;
-        private int maxValue;
         private bool sorted = false;
-        private SolidBrush blackBrush = new SolidBrush(Color.Black);
-        private SolidBrush whiteBrush = new SolidBrush(Color.White);
 
         // Main sort method
-        public void Sort(int[] numbers_in, Graphics graphics_in, int maxValue_in)
+        public void Sort(int[] numbers_in, Action<int, int> updateCallback)
         {
             numbers = numbers_in;
-            graphics = graphics_in;
-            maxValue = maxValue_in;
 
             // Bubble sort algorithm
             while(!sorted)
@@ -34,8 +29,10 @@ namespace SortVisualizer
                     {
                         Swap(i, i + 1);
                         sorted = false;
+                        updateCallback(i, i + 1);
                     }
                 }
+                Thread.Sleep(10); // Slow down the sorting process
             }
         }
 
@@ -45,12 +42,6 @@ namespace SortVisualizer
             int temp = numbers[i];
             numbers[i] = numbers[j];
             numbers[j] = temp;
-
-            graphics.FillRectangle(blackBrush, i, 0, 1, maxValue);
-            graphics.FillRectangle(blackBrush, j, 0, 1, maxValue);
-
-            graphics.FillRectangle(whiteBrush, i, maxValue - numbers[i], 1, maxValue);
-            graphics.FillRectangle(whiteBrush, j, maxValue - numbers[j], 1, maxValue);
         }
     }
 }

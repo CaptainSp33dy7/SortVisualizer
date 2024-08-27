@@ -37,6 +37,7 @@
             ResetButton = new Button();
             GraphicsPanel = new Panel();
             SortButton = new Button();
+            bgWorker = new System.ComponentModel.BackgroundWorker();
             TopMenu.SuspendLayout();
             SuspendLayout();
             // 
@@ -46,7 +47,8 @@
             TopMenu.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, helpToolStripMenuItem });
             TopMenu.Location = new Point(0, 0);
             TopMenu.Name = "TopMenu";
-            TopMenu.Size = new Size(1844, 33);
+            TopMenu.Padding = new Padding(4, 1, 0, 1);
+            TopMenu.Size = new Size(1291, 24);
             TopMenu.TabIndex = 0;
             TopMenu.Text = "menuStrip1";
             // 
@@ -54,44 +56,47 @@
             // 
             fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new Size(54, 29);
+            fileToolStripMenuItem.Size = new Size(37, 22);
             fileToolStripMenuItem.Text = "File";
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(141, 34);
+            exitToolStripMenuItem.Size = new Size(93, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
             // helpToolStripMenuItem
             // 
             helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            helpToolStripMenuItem.Size = new Size(65, 29);
+            helpToolStripMenuItem.Size = new Size(44, 22);
             helpToolStripMenuItem.Text = "Help";
             // 
             // AlgorithmLabel
             // 
             AlgorithmLabel.AutoSize = true;
-            AlgorithmLabel.Location = new Point(12, 33);
+            AlgorithmLabel.Location = new Point(8, 20);
+            AlgorithmLabel.Margin = new Padding(2, 0, 2, 0);
             AlgorithmLabel.Name = "AlgorithmLabel";
-            AlgorithmLabel.Size = new Size(92, 25);
+            AlgorithmLabel.Size = new Size(61, 15);
             AlgorithmLabel.TabIndex = 1;
             AlgorithmLabel.Text = "Algorithm";
             // 
             // AlgoPicker
             // 
             AlgoPicker.FormattingEnabled = true;
-            AlgoPicker.Location = new Point(110, 30);
+            AlgoPicker.Location = new Point(77, 18);
+            AlgoPicker.Margin = new Padding(2);
             AlgoPicker.Name = "AlgoPicker";
-            AlgoPicker.Size = new Size(391, 33);
+            AlgoPicker.Size = new Size(275, 23);
             AlgoPicker.TabIndex = 2;
             // 
             // ResetButton
             // 
-            ResetButton.Location = new Point(516, 28);
+            ResetButton.Location = new Point(361, 17);
+            ResetButton.Margin = new Padding(2);
             ResetButton.Name = "ResetButton";
-            ResetButton.Size = new Size(112, 34);
+            ResetButton.Size = new Size(78, 20);
             ResetButton.TabIndex = 3;
             ResetButton.Text = "Reset";
             ResetButton.UseVisualStyleBackColor = true;
@@ -101,26 +106,36 @@
             // 
             GraphicsPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             GraphicsPanel.BackColor = SystemColors.AppWorkspace;
-            GraphicsPanel.Location = new Point(12, 78);
+            GraphicsPanel.Location = new Point(8, 47);
+            GraphicsPanel.Margin = new Padding(2);
             GraphicsPanel.Name = "GraphicsPanel";
-            GraphicsPanel.Size = new Size(1820, 990);
+            GraphicsPanel.Size = new Size(1274, 594);
             GraphicsPanel.TabIndex = 4;
             // 
             // SortButton
             // 
-            SortButton.Location = new Point(634, 28);
+            SortButton.Location = new Point(444, 17);
+            SortButton.Margin = new Padding(2);
             SortButton.Name = "SortButton";
-            SortButton.Size = new Size(112, 34);
+            SortButton.Size = new Size(78, 20);
             SortButton.TabIndex = 5;
             SortButton.Text = "Sort Array";
             SortButton.UseVisualStyleBackColor = true;
             SortButton.Click += SortButton_Click;
             // 
-            // Form1
+            // bgWorker
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            bgWorker.WorkerReportsProgress = true;
+            bgWorker.WorkerSupportsCancellation = true;
+            bgWorker.DoWork += bgWorker_DoWork;
+            bgWorker.ProgressChanged += bgWorker_ProgressChanged;
+            bgWorker.RunWorkerCompleted += bgWorker_RunWorkerCompleted;
+            // 
+            // MainForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1844, 1080);
+            ClientSize = new Size(1291, 648);
             Controls.Add(SortButton);
             Controls.Add(GraphicsPanel);
             Controls.Add(ResetButton);
@@ -129,7 +144,8 @@
             Controls.Add(TopMenu);
             DoubleBuffered = true;
             MainMenuStrip = TopMenu;
-            Name = "Form1";
+            Margin = new Padding(2);
+            Name = "MainForm";
             Text = "Form1";
             TopMenu.ResumeLayout(false);
             TopMenu.PerformLayout();
@@ -148,5 +164,6 @@
         private Button ResetButton;
         private Panel GraphicsPanel;
         private Button SortButton;
+        private System.ComponentModel.BackgroundWorker bgWorker;
     }
 }
