@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,7 +16,7 @@ namespace SortVisualizer
         private bool sorted = false;
 
         // Main sort method
-        public void Sort(int[] numbers_in, Action<int, int> updateCallback)
+        public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             numbers = numbers_in;
 
@@ -25,6 +26,13 @@ namespace SortVisualizer
                 sorted = true;
                 for (int i = 0; i < numbers.Length - 1; i++)
                 {
+                    // Check if a cancellation request is pending
+                    if (bgWorker.CancellationPending)
+                    {
+                        e.Cancel = true; // Set the Cancel flag to true
+                        return; // Exit the sort method
+                    }
+
                     if (numbers[i] > numbers[i + 1])
                     {
                         Swap(i, i + 1);

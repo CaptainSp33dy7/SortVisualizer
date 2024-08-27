@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             TopMenu = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
@@ -38,6 +39,9 @@
             GraphicsPanel = new Panel();
             SortButton = new Button();
             bgWorker = new System.ComponentModel.BackgroundWorker();
+            StopButton = new Button();
+            DataPicker = new ComboBox();
+            label1 = new Label();
             TopMenu.SuspendLayout();
             SuspendLayout();
             // 
@@ -131,11 +135,43 @@
             bgWorker.ProgressChanged += bgWorker_ProgressChanged;
             bgWorker.RunWorkerCompleted += bgWorker_RunWorkerCompleted;
             // 
+            // StopButton
+            // 
+            StopButton.Location = new Point(527, 17);
+            StopButton.Name = "StopButton";
+            StopButton.Size = new Size(66, 20);
+            StopButton.TabIndex = 6;
+            StopButton.Text = "Stop";
+            StopButton.UseVisualStyleBackColor = true;
+            StopButton.Click += StopButton_Click;
+            // 
+            // DataPicker
+            // 
+            DataPicker.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DataPicker.FormattingEnabled = true;
+            DataPicker.Location = new Point(1105, 17);
+            DataPicker.Name = "DataPicker";
+            DataPicker.Size = new Size(174, 23);
+            DataPicker.TabIndex = 7;
+            // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label1.AutoSize = true;
+            label1.Location = new Point(1003, 20);
+            label1.Name = "label1";
+            label1.Size = new Size(96, 15);
+            label1.TabIndex = 8;
+            label1.Text = "Input data picker";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1291, 648);
+            Controls.Add(label1);
+            Controls.Add(DataPicker);
+            Controls.Add(StopButton);
             Controls.Add(SortButton);
             Controls.Add(GraphicsPanel);
             Controls.Add(ResetButton);
@@ -143,10 +179,11 @@
             Controls.Add(AlgorithmLabel);
             Controls.Add(TopMenu);
             DoubleBuffered = true;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = TopMenu;
             Margin = new Padding(2);
             Name = "MainForm";
-            Text = "Form1";
+            Text = "Sort Visualizer";
             TopMenu.ResumeLayout(false);
             TopMenu.PerformLayout();
             ResumeLayout(false);
@@ -165,5 +202,8 @@
         private Panel GraphicsPanel;
         private Button SortButton;
         private System.ComponentModel.BackgroundWorker bgWorker;
+        private Button StopButton;
+        private ComboBox DataPicker;
+        private Label label1;
     }
 }

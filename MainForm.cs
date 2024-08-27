@@ -11,21 +11,25 @@ namespace SortVisualizer
         private SolidBrush blackBrush = new SolidBrush(Color.Black); // Brush for erasing the bars
         private int arraySize; // The size of the array to be sorted
         private const int maxValue = 1000; // Maximum value for each element
-        private const int barWidth = 3; // The width of each bar
+        private int barWidth;
 
         // Constructor
         public MainForm()
         {
+            barWidth = 3; // The width of each bar
             InitializeComponent();
-            LoadClassesIntoComboBox();
-            GraphicsPanel.Paint += new PaintEventHandler(GraphicsPanel_Paint);
-            this.Resize += MainForm_Resize;
-            GenerateRandomArray();
+            this.MinimumSize = new Size(900, 200); // Set the minimum size of the form
+            LoadClassesIntoComboBox(); // Load the sorting algorithms into the ComboBox
+            LoadDataIntoComboBox(); // Load the data files into the ComboBox
+            GraphicsPanel.Paint += new PaintEventHandler(GraphicsPanel_Paint); // Add the Paint event handler
+            this.Resize += MainForm_Resize; // Add the Resize event handler
+            GenerateRandomArray(); // Generate a random array
         }
 
         // Find all classes that inherit ISortEngine and add them to the ComboBox
         private void LoadClassesIntoComboBox()
         {
+            AlgoPicker.Items.Clear();
             // Loop through all types in the assembly to find the ones that implement ISortEngine
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
@@ -35,6 +39,19 @@ namespace SortVisualizer
                 }
             }
             AlgoPicker.SelectedIndex = 0; // Select the first item by default
+        }
+
+        // Find all csv files in the directory and add them to the ComboBox along with Random option
+        private void LoadDataIntoComboBox()
+        {
+            DataPicker.Items.Clear();
+            DataPicker.Items.Add("Random");
+            string[] files = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "test_data"), "*.csv");
+            foreach (string file in files)
+            {
+                DataPicker.Items.Add(Path.GetFileNameWithoutExtension(file));
+            }
+            DataPicker.SelectedIndex = 0; // Select the first item by default
         }
 
         // Event handler for redrawing the array
@@ -69,7 +86,21 @@ namespace SortVisualizer
             // If the window is being resized while sorting, do not resize the array
             if (!isSorting)
             {
-                GenerateRandomArray();
+                string selectedItem = DataPicker.SelectedItem.ToString();
+
+                // If the selected item is Random, generate a new random array
+                if (selectedItem == "Random")
+                {
+                    barWidth = 3;
+                    GenerateRandomArray();
+                }
+                else // Otherwise, load the selected CSV file
+                {
+                    string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+                    string testsFolder = Path.Combine(appFolder, "test_data");
+                    string filePath = Path.Combine(testsFolder, selectedItem) + ".csv";
+                    LoadArrayFromCSV(filePath);
+                }
             }
             GraphicsPanel.Invalidate(); // Redraw the array
         }
@@ -85,6 +116,41 @@ namespace SortVisualizer
             for (int i = 0; i < arraySize + 1; i++)
             {
                 numbers[i] = random.Next(maxValue);
+            }
+        }
+
+        // Event handler for the DataPicker's SelectedIndexChanged event
+        private void LoadArrayFromCSV(string filePath)
+        {
+            try
+            {
+                // Read the lines from the CSV file
+                string[] lines = File.ReadAllLines(filePath);
+                numbers = new int[lines.Length];
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    numbers[i] = int.Parse(lines[i]);
+                }
+
+                // If the array is too big, reduce the bar width
+                if (lines.Length > 600 && lines.Length < 1200)
+                {
+                    barWidth = 2;
+                }
+                else if (lines.Length >= 1200)
+                {
+                    barWidth = 1;
+                }
+                else
+                {
+                    barWidth = 3;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Display an error message if the file cannot be loaded
+                MessageBox.Show("Error loading CSV file: " + ex.Message);
             }
         }
 
@@ -111,10 +177,24 @@ namespace SortVisualizer
         // Event handler for the Reset button
         private void ResetButton_Click(object sender, EventArgs e)
         {
-            // If the array is not being sorted, generate a new random array
+            // If the array is not being sorted, either load or generate array
             if (!isSorting)
             {
-                GenerateRandomArray();
+                string selectedItem = DataPicker.SelectedItem.ToString();
+
+                if (selectedItem == "Random")
+                {
+                    barWidth = 3; // Reset the bar width
+                    GenerateRandomArray();
+                }
+                else
+                {
+                    string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+                    string testsFolder = Path.Combine(appFolder, "test_data");
+                    string filePath = Path.Combine(testsFolder, selectedItem) + ".csv";
+                    LoadArrayFromCSV(filePath); // Load the selected CSV file
+                }
+
                 GraphicsPanel.Invalidate(); // Redraw the array
             }
         }
@@ -130,8 +210,13 @@ namespace SortVisualizer
         // Event handler for the background worker's DoWork event
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            // Get the selected sorting algorithm
-            Type selectedSort = Assembly.GetExecutingAssembly().GetType("SortVisualizer." + AlgoPicker.SelectedItem.ToString());
+            // Get the selected sorting algorithm using UI thread
+            Type selectedSort = null;
+            this.Invoke((Action)delegate
+            {
+                selectedSort = Assembly.GetExecutingAssembly().GetType("SortVisualizer." + AlgoPicker.SelectedItem.ToString());
+            });
+
             if (selectedSort == null) return;
 
             isSorting = true; // Set the flag to indicate that the array is being sorted
@@ -141,7 +226,7 @@ namespace SortVisualizer
             sortEngine.Sort(numbers, (i, j) =>
             {
                 bgWorker.ReportProgress(i, j); // Report the progress to the UI thread
-            });
+            }, bgWorker, e);
         }
 
         // Event handler for the background worker's ProgressChanged event
@@ -156,6 +241,33 @@ namespace SortVisualizer
         private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             isSorting = false; // Set the flag to indicate that the array is no longer being sorted
+
+            if (e.Cancelled)
+            {
+                // The operation was canceled
+                MessageBox.Show("Sorting was canceled.");
+            }
+            else if (e.Error != null)
+            {
+                // An error occurred during the operation
+                MessageBox.Show("An error occurred: " + e.Error.Message);
+            }
+            else
+            {
+                // Sorting completed successfully
+                MessageBox.Show("Sorting completed.");
+            }
+            bgWorker.Dispose(); // Dispose of the background worker
+        }
+
+        // Event handler for the Cancel button
+        private void StopButton_Click(object sender, EventArgs e)
+        {
+            // If the array is being sorted, cancel the sorting process
+            if (isSorting)
+            {
+                bgWorker.CancelAsync();
+            }
         }
     }
 }
