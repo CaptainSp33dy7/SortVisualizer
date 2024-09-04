@@ -13,7 +13,6 @@ namespace SortVisualizer
     {
         // Initialization
         private int[] numbers;
-        private bool sorted = false;
 
         // Main sort method
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
@@ -24,12 +23,9 @@ namespace SortVisualizer
             for (int i = 0; i < numbers.Length - 1; i++)
             {
                 // Check if a cancellation request is pending
-                if (bgWorker.CancellationPending)
-                {
-                    e.Cancel = true; // Set the Cancel flag to true
-                    return; // Exit the sort method
-                }
+                if (CheckCancellation(bgWorker, e)) return;
 
+                // Find the minimum element in the unsorted part of the array
                 int minIndex = i;
                 for (int j = i + 1; j < numbers.Length; j++)
                 {
@@ -39,17 +35,15 @@ namespace SortVisualizer
                     }
                 }
 
+                // Swap the found minimum element to be the last element of the sorted part
                 if (minIndex != i)
                 {
                     Swap(i, minIndex);
-                    updateCallback(i, minIndex);
+                    updateCallback(i, minIndex); // Update the visualizer
                 }
 
                 Thread.Sleep(15); // Slow down the sorting process
             }
-
-            // After the last pass, the array is sorted
-            sorted = true;
         }
 
         // Helper method to swap two elements in the array and draw the changes
@@ -58,6 +52,18 @@ namespace SortVisualizer
             int temp = numbers[i];
             numbers[i] = numbers[j];
             numbers[j] = temp;
+        }
+
+        // Helper method to check if a cancellation request is pending
+        private bool CheckCancellation(BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            // Check if a cancellation request is pending
+            if (bgWorker.CancellationPending)
+            {
+                e.Cancel = true; // Set the Cancel flag to true
+                return true; 
+            }
+            else { return false; }
         }
     }
 }

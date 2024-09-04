@@ -13,30 +13,24 @@ namespace SortVisualizer
     {
         // Initialization
         private int[] numbers;
-        private bool sorted = false;
 
         // Main sort method
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             numbers = numbers_in;
             MergeSortRecursive(0, numbers.Length - 1, updateCallback, bgWorker, e);
-
-            // After the merge process, the array is sorted
-            sorted = true;
         }
 
         // Recursive merge sort method
         private void MergeSortRecursive(int left, int right, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             // Check if a cancellation request is pending
-            if (bgWorker.CancellationPending)
-            {
-                e.Cancel = true; // Set the Cancel flag to true
-                return; // Exit the sort method
-            }
+            if (CheckCancellation(bgWorker, e)) return;
 
             if (left < right)
             {
+                if (IsSorted(left, right)) return; // Return early if already sorted
+
                 int middle = (left + right) / 2;
 
                 // Sort the first and second halves
@@ -51,9 +45,13 @@ namespace SortVisualizer
         // Helper method to merge two sorted halves
         private void Merge(int left, int middle, int right, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
+            // Check if a cancellation request is pending
+            if (CheckCancellation(bgWorker, e)) return;
+
             int leftSize = middle - left + 1;
             int rightSize = right - middle;
 
+            // Create temporary arrays
             int[] leftArray = new int[leftSize];
             int[] rightArray = new int[rightSize];
 
@@ -61,17 +59,17 @@ namespace SortVisualizer
             Array.Copy(numbers, left, leftArray, 0, leftSize);
             Array.Copy(numbers, middle + 1, rightArray, 0, rightSize);
 
-            int i = 0, j = 0, k = left;
+            // Initial indexes of the temporary arrays
+            int i = 0;
+            int j = 0;
+            int k = left;
 
             // Merge the temp arrays back into the original array
             while (i < leftSize && j < rightSize)
             {
                 // Check if a cancellation request is pending
-                if (bgWorker.CancellationPending)
-                {
-                    e.Cancel = true; // Set the Cancel flag to true
-                    return; // Exit the sort method
-                }
+                // if (CheckCancellation(bgWorker, e)) return;
+                // possible to uncomment to cancel the sorting process without delay but there is data loss in the array!!!
 
                 if (leftArray[i] <= rightArray[j])
                 {
@@ -85,8 +83,7 @@ namespace SortVisualizer
                     j++;
                 }
 
-                // Call the update callback to reflect changes
-                updateCallback(k, k);
+                updateCallback(k, k); // Update the visualizer
                 k++;
             }
             
@@ -95,18 +92,14 @@ namespace SortVisualizer
             while (i < leftSize)
             {
                 // Check if a cancellation request is pending
-                if (bgWorker.CancellationPending)
-                {
-                    e.Cancel = true; // Set the Cancel flag to true
-                    return; // Exit the sort method
-                }
+                // if (CheckCancellation(bgWorker, e)) return;
+                // possible to uncomment to cancel the sorting process without delay but there is data loss in the array!!!
 
                 numbers[k] = leftArray[i];
                 i++;
                 k++;
 
-                // Call the update callback to reflect changes
-                updateCallback(k - 1, k - 1);
+                updateCallback(k - 1, k - 1); // Update the visualizer
                 Thread.Sleep(10); // Slow down the sorting process
             }
 
@@ -114,20 +107,40 @@ namespace SortVisualizer
             while (j < rightSize)
             {
                 // Check if a cancellation request is pending
-                if (bgWorker.CancellationPending)
-                {
-                    e.Cancel = true; // Set the Cancel flag to true
-                    return; // Exit the sort method
-                }
+                // if (CheckCancellation(bgWorker, e)) return;
+                // possible to uncomment to cancel the sorting process without delay but there is data loss in the array!!!
 
                 numbers[k] = rightArray[j];
                 j++;
                 k++;
 
-                // Call the update callback to reflect changes
-                updateCallback(k - 1, k - 1);
+                updateCallback(k - 1, k - 1); // Update the visualizer
                 Thread.Sleep(10); // Slow down the sorting process
             }
+        }
+
+        // Helper method to check if the array is already sorted
+        private bool IsSorted(int left, int right)
+        {
+            for (int i = left; i < right; i++)
+            {
+                // If the current element is greater than the next element, the array is not sorted
+                if (numbers[i] > numbers[i + 1])
+                    return false;
+            }
+            return true;
+        }
+
+        // Helper method to check if a cancellation request is pending
+        private bool CheckCancellation(BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            // Check if a cancellation request is pending
+            if (bgWorker.CancellationPending)
+            {
+                e.Cancel = true; // Set the Cancel flag to true
+                return true;
+            }
+            else { return false; }
         }
     }
 }

@@ -13,7 +13,6 @@ namespace SortVisualizer
     {
         // Initialization
         private int[] numbers;
-        private bool sorted = false;
 
         // Main sort method
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
@@ -23,44 +22,38 @@ namespace SortVisualizer
             // Get the maximum number to know the number of digits
             int max = numbers.Max();
 
-            // Do counting sort for every digit. Instead of passing digit number,
-            // exp is passed. exp is 10^i where i is the current digit number
+            // Do counting sort for every digit
+            // Instead of passing digit number, exp is passed
+            // exp is 10^i where i is the current digit number
             for (int exp = 1; max / exp > 0; exp *= 10)
             {
                 CountingSort(exp, updateCallback, bgWorker, e);
             }
-
-            // After the radix sort process, the array is sorted
-            sorted = true;
         }
 
-        // A method to do counting sort of numbers[] according to the digit represented by exp
+        // Method to do counting sort of numbers array according to the digit represented by exp
         private void CountingSort(int exp, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             int n = numbers.Length;
             int[] output = new int[n]; // Output array
             int[] count = new int[10]; // There are 10 possible digits (0-9)
 
-            /*// Check if a cancellation request is pending
-            if (bgWorker.CancellationPending)
-            {
-                e.Cancel = true; // Set the Cancel flag to true
-                return; // Exit the sort method
-            }*/
-
             // Store count of occurrences in count[]
             for (int i = 0; i < n; i++)
             {
                 int digit = (numbers[i] / exp) % 10;
                 count[digit]++;
-                updateCallback(i, i); // Update the visualizer
             }
 
-            // Change count[i] so that it now contains actual position of this digit in output[]
+            // Calculate the cumulative count of each digit
+            // This changes the count array so that count[i] now contains the actual position of this digit in the output array
             for (int i = 1; i < 10; i++)
             {
                 count[i] += count[i - 1];
             }
+
+            // Check if a cancellation request is pending
+            if (CheckCancellation(bgWorker, e)) return;
 
             // Build the output array
             for (int i = n - 1; i >= 0; i--)
@@ -68,28 +61,34 @@ namespace SortVisualizer
                 int digit = (numbers[i] / exp) % 10;
                 output[count[digit] - 1] = numbers[i];
                 count[digit]--;
-
-                // Update the visualizer for each placement
-                updateCallback(i, count[digit]);
-                //Thread.Sleep(10); // Slow down the sorting process
             }
 
-            // Copy the output array to numbers[], so that numbers[] contains sorted numbers according to current digit
+            // Check if a cancellation request is pending
+            if (CheckCancellation(bgWorker, e)) return;
+
+            // Copy the output array to numbers array, so that numbers array contains sorted numbers according to current digit
             for (int i = 0; i < n; i++)
             {
-                // Check if a cancellation request is pending
-                if (bgWorker.CancellationPending)
-                {
-                    e.Cancel = true; // Set the Cancel flag to true
-                    return; // Exit the sort method
-                }
-                
                 numbers[i] = output[i];
 
-                // Update the visualizer after copying each element
-                updateCallback(i, i);
+                updateCallback(i, i); // Update the visualizer
                 Thread.Sleep(10); // Slow down the sorting process
             }
+
+            // Check if a cancellation request is pending
+            if (CheckCancellation(bgWorker, e)) return;
+        }
+
+        // Helper method to check if a cancellation request is pending
+        private bool CheckCancellation(BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            // Check if a cancellation request is pending
+            if (bgWorker.CancellationPending)
+            {
+                e.Cancel = true; // Set the Cancel flag to true
+                return true;
+            }
+            else { return false; }
         }
     }
 }

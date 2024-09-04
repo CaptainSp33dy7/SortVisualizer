@@ -13,7 +13,6 @@ namespace SortVisualizer
     {
         // Initialization
         private int[] numbers;
-        private bool sorted = false;
 
         // Main sort method
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
@@ -23,7 +22,7 @@ namespace SortVisualizer
             // Find the maximum value in the array
             int maxValue = numbers.Max();
 
-            // Create a count array to store the count of each unique element
+            // Create a count array to store the count of each unique number
             int[] count = new int[maxValue + 1];
 
             // Initialize the count array
@@ -38,24 +37,31 @@ namespace SortVisualizer
             {
                 while (count[i] > 0)
                 {
-                    // Check if a cancellation request is pending
-                    if (bgWorker.CancellationPending)
-                    {
-                        e.Cancel = true; // Set the Cancel flag to true
-                        return; // Exit the sort method
-                    }
-
                     numbers[index] = i;
                     count[i]--;
-                    updateCallback(index, i); // Update callback for visualization
+                    updateCallback(index, index); // Update the visualizer
                     index++;
-
                     Thread.Sleep(10); // Slow down the sorting process
                 }
-            }
 
-            // After processing, the array is sorted
-            sorted = true;
+                // Check if a cancellation request is pending
+                // if (CheckCancellation(bgWorker, e)) return;
+                // possible to uncomment to cancel the sorting process but there is data loss in the next sorting with this same algorithm
+                // due to the count array getting redundant values from the previous sorting (if you decide to uncomment this, you should
+                // make the StopButton visible in the main form)
+            }
+        }
+
+        // Helper method to check if a cancellation request is pending
+        private bool CheckCancellation(BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            // Check if a cancellation request is pending
+            if (bgWorker.CancellationPending)
+            {
+                e.Cancel = true; // Set the Cancel flag to true
+                return true;
+            }
+            else { return false; }
         }
     }
 }

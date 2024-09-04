@@ -11,18 +11,19 @@ namespace SortVisualizer
         private SolidBrush blackBrush = new SolidBrush(Color.Black); // Brush for erasing the bars
         private int arraySize; // The size of the array to be sorted
         private const int maxValue = 1000; // Maximum value for each element
-        private int barWidth;
+        private int barWidth; // The width of each bar
 
         // Constructor
         public MainForm()
         {
-            barWidth = 3; // The width of each bar
+            barWidth = 3; // The width of each bar set to 3 by default, for bigger arrays it gets reduced
             InitializeComponent();
             this.MinimumSize = new Size(900, 200); // Set the minimum size of the form
             LoadClassesIntoComboBox(); // Load the sorting algorithms into the ComboBox
             LoadDataIntoComboBox(); // Load the data files into the ComboBox
             GraphicsPanel.Paint += new PaintEventHandler(GraphicsPanel_Paint); // Add the Paint event handler
             this.Resize += MainForm_Resize; // Add the Resize event handler
+            AlgoPicker.SelectedIndexChanged += AlgoPicker_SelectedIndexChanged; // Add the SelectedIndexChanged event handler for AlgoPicker
             GenerateRandomArray(); // Generate a random array
         }
 
@@ -54,6 +55,22 @@ namespace SortVisualizer
             DataPicker.SelectedIndex = 0; // Select the first item by default
         }
 
+        // Event handler for the AlgoPicker's SelectedIndexChanged event
+        private void AlgoPicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Hides the StopButton if the selected algorithm is CountingSort because of the problematic cancellation
+
+            // Check if the selected algorithm is "CountingSort"
+            if (AlgoPicker.SelectedItem.ToString() == "CountingSort")
+            {
+                StopButton.Visible = false; // Hide the StopButton
+            }
+            else
+            {
+                StopButton.Visible = true; // Show the StopButton
+            }
+        }
+
         // Event handler for redrawing the array
         private void GraphicsPanel_Paint(object sender, PaintEventArgs e)
         {
@@ -74,9 +91,9 @@ namespace SortVisualizer
             // Draw each bar
             for (int i = 0; i < numbers.Length; i++)
             {
-                int x = i * barWidth;
-                int barHeight = (int)((double)numbers[i] / maxValue * maxHeight);
-                graphics.FillRectangle(whiteBrush, x, maxHeight - barHeight, barWidth, barHeight);
+                int x = i * barWidth; // Calculate the x position of the bar
+                int barHeight = (int)((double)numbers[i] / maxValue * maxHeight); // Calculate the height of the bar
+                graphics.FillRectangle(whiteBrush, x, maxHeight - barHeight, barWidth, barHeight); // Draw the bar
             }
         }
 
@@ -102,6 +119,7 @@ namespace SortVisualizer
                     LoadArrayFromCSV(filePath);
                 }
             }
+
             GraphicsPanel.Invalidate(); // Redraw the array
         }
 
@@ -171,7 +189,7 @@ namespace SortVisualizer
         // Event handler for the Exit menu item
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            this.Close(); // Close the application
         }
 
         // Event handler for the Reset button
@@ -210,12 +228,22 @@ namespace SortVisualizer
         // Event handler for the background worker's DoWork event
         private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
+            // is called by bgWorker.RunWorkerAsync() in SortButton_Click
+            // this method is executed on a separate thread
+
             // Get the selected sorting algorithm using UI thread
             Type selectedSort = null;
-            this.Invoke((Action)delegate
+            try
             {
-                selectedSort = Assembly.GetExecutingAssembly().GetType("SortVisualizer." + AlgoPicker.SelectedItem.ToString());
-            });
+                this.Invoke((Action)delegate
+                {
+                    selectedSort = Assembly.GetExecutingAssembly().GetType("SortVisualizer." + AlgoPicker.SelectedItem.ToString());
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error selecting sorting algorithm: " + ex.Message);
+            }
 
             if (selectedSort == null) return;
 
@@ -226,15 +254,17 @@ namespace SortVisualizer
             sortEngine.Sort(numbers, (i, j) =>
             {
                 bgWorker.ReportProgress(i, j); // Report the progress to the UI thread
-            }, bgWorker, e);
+            }, bgWorker, e); // Call the Sort method of the sorting algorithm
         }
 
         // Event handler for the background worker's ProgressChanged event
         private void bgWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            // is called by bgWorker.ReportProgress(i, j) when updateCallback is called in Sort method
+
             // Redraw the two bars that have been swapped
-            InvalidateArrayPosition(e.ProgressPercentage);
-            InvalidateArrayPosition(e.UserState as int? ?? 0);
+            InvalidateArrayPosition(e.ProgressPercentage); // first index (ProgressPercentage because bgWorker's arguments, useful because it is int)
+            InvalidateArrayPosition(e.UserState as int? ?? 0); // second index (default to 0)
         }
 
         // Event handler for the background worker's RunWorkerCompleted event
@@ -254,8 +284,7 @@ namespace SortVisualizer
             }
             else
             {
-                // Sorting completed successfully
-                MessageBox.Show("Sorting completed.");
+                CheckSorted(); // Final check if the array is sorted
             }
             bgWorker.Dispose(); // Dispose of the background worker
         }
@@ -266,7 +295,33 @@ namespace SortVisualizer
             // If the array is being sorted, cancel the sorting process
             if (isSorting)
             {
-                bgWorker.CancelAsync();
+                bgWorker.CancelAsync(); // raises e.Cancel = true in bgWorker_DoWork and shows cancel message in bgWorker_RunWorkerCompleted
+            }
+        }
+
+        // Final check if the array is sorted
+        private void CheckSorted()
+        {
+            // Check if the array is sorted
+            bool sorted = true;
+            for (int i = 0; i < numbers.Length - 1; i++)
+            {
+                if (numbers[i] > numbers[i + 1])
+                {
+                    sorted = false;
+                    break;
+                }
+            }
+
+            if (sorted)
+            {
+                // Display a message if the array is sorted
+                MessageBox.Show("The array is sorted.");
+            }
+            else
+            {
+                // Display a message if the array is not sorted
+                MessageBox.Show("The array is not sorted.");
             }
         }
     }

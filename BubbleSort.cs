@@ -27,17 +27,13 @@ namespace SortVisualizer
                 for (int i = 0; i < numbers.Length - 1; i++)
                 {
                     // Check if a cancellation request is pending
-                    if (bgWorker.CancellationPending)
-                    {
-                        e.Cancel = true; // Set the Cancel flag to true
-                        return; // Exit the sort method
-                    }
+                    if (CheckCancellation(bgWorker, e)) return;
 
                     if (numbers[i] > numbers[i + 1])
                     {
                         Swap(i, i + 1);
                         sorted = false;
-                        updateCallback(i, i + 1);
+                        updateCallback(i, i + 1); // Update the visualizer
                     }
                 }
                 Thread.Sleep(10); // Slow down the sorting process
@@ -50,6 +46,17 @@ namespace SortVisualizer
             int temp = numbers[i];
             numbers[i] = numbers[j];
             numbers[j] = temp;
+        }
+
+        // Helper method to check if a cancellation request is pending
+        private bool CheckCancellation(BackgroundWorker bgWorker, DoWorkEventArgs e)
+        {
+            // Check if a cancellation request is pending
+            if (bgWorker.CancellationPending)
+            {
+                e.Cancel = true; // Set the Cancel flag to true
+                return true;
+            } else { return false;}
         }
     }
 }
