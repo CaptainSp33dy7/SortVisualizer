@@ -18,9 +18,11 @@ namespace SortVisualizer
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             numbers = numbers_in;
+            int maxValue;
 
             // Find the maximum value in the array
-            int maxValue = numbers.Max();
+            if (numbers.Length > 0) { maxValue = numbers.Max(); }
+            else { return; }
 
             // Create a count array to store the count of each unique number
             int[] count = new int[maxValue + 1];

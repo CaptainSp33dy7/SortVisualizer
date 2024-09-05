@@ -18,9 +18,11 @@ namespace SortVisualizer
         public void Sort(int[] numbers_in, Action<int, int> updateCallback, BackgroundWorker bgWorker, DoWorkEventArgs e)
         {
             numbers = numbers_in;
+            int max;
 
-            // Get the maximum number to know the number of digits
-            int max = numbers.Max();
+            // Find the maximum value in the array to get the number of digits
+            if (numbers.Length > 0) { max = numbers.Max(); }
+            else { return; }
 
             // Do counting sort for every digit
             // Instead of passing digit number, exp is passed
