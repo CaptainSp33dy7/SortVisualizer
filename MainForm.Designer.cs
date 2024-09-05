@@ -33,6 +33,7 @@
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
+            rEADMEToolStripMenuItem = new ToolStripMenuItem();
             AlgorithmLabel = new Label();
             AlgoPicker = new ComboBox();
             ResetButton = new Button();
@@ -42,6 +43,7 @@
             StopButton = new Button();
             DataPicker = new ComboBox();
             label1 = new Label();
+            aboutToolStripMenuItem = new ToolStripMenuItem();
             TopMenu.SuspendLayout();
             SuspendLayout();
             // 
@@ -72,9 +74,17 @@
             // 
             // helpToolStripMenuItem
             // 
+            helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { rEADMEToolStripMenuItem, aboutToolStripMenuItem });
             helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             helpToolStripMenuItem.Size = new Size(44, 22);
             helpToolStripMenuItem.Text = "Help";
+            // 
+            // rEADMEToolStripMenuItem
+            // 
+            rEADMEToolStripMenuItem.Name = "rEADMEToolStripMenuItem";
+            rEADMEToolStripMenuItem.Size = new Size(180, 22);
+            rEADMEToolStripMenuItem.Text = "README";
+            rEADMEToolStripMenuItem.Click += rEADMEToolStripMenuItem_Click;
             // 
             // AlgorithmLabel
             // 
@@ -164,6 +174,13 @@
             label1.TabIndex = 8;
             label1.Text = "Input data picker";
             // 
+            // aboutToolStripMenuItem
+            // 
+            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            aboutToolStripMenuItem.Size = new Size(180, 22);
+            aboutToolStripMenuItem.Text = "About";
+            aboutToolStripMenuItem.Click += aboutToolStripMenuItem_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -205,5 +222,7 @@
         private Button StopButton;
         private ComboBox DataPicker;
         private Label label1;
+        private ToolStripMenuItem rEADMEToolStripMenuItem;
+        private ToolStripMenuItem aboutToolStripMenuItem;
     }
 }

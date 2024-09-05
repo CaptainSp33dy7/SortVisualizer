@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace SortVisualizer
@@ -323,6 +324,46 @@ namespace SortVisualizer
                 // Display a message if the array is not sorted
                 MessageBox.Show("The array is not sorted.");
             }
+        }
+
+        // Open the README file when the README menu item is clicked
+        private void rEADMEToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get the current application folder (e.g., SortVisualizer/bin/Debug/net8.0-windows/)
+                string appFolder = AppDomain.CurrentDomain.BaseDirectory;
+
+                // Move up four levels to reach the SortVisualizer directory
+                string rootFolder = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(appFolder).FullName).FullName).FullName).FullName;
+
+                // Combine the SortVisualizer folder path with README.md
+                string docPath = Path.Combine(rootFolder, "README.md");
+
+                Process.Start(new ProcessStartInfo(docPath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Open my GitHub profile when the About menu item is clicked
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // URL of my GitHub profile
+                string url = "https://github.com/CaptainSp33dy7";
+
+                // Open the URL in the default web browser
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
         }
     }
 }
