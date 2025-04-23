@@ -1,11 +1,14 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using NLog;
 
 namespace SortVisualizer
 {
     public partial class MainForm : Form
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         int[] numbers; // Array to be sorted
         bool isSorting = false; // Flag to indicate whether the array is being sorted
         private SolidBrush whiteBrush = new SolidBrush(Color.White); // Brush for drawing the bars
@@ -17,6 +20,8 @@ namespace SortVisualizer
         // Constructor
         public MainForm()
         {
+            Logger.Info("Application starting.");
+
             barWidth = 3; // The width of each bar set to 3 by default, for bigger arrays it gets reduced
             InitializeComponent();
             this.MinimumSize = new Size(900, 200); // Set the minimum size of the form
@@ -26,6 +31,8 @@ namespace SortVisualizer
             this.Resize += MainForm_Resize; // Add the Resize event handler
             AlgoPicker.SelectedIndexChanged += AlgoPicker_SelectedIndexChanged; // Add the SelectedIndexChanged event handler for AlgoPicker
             GenerateRandomArray(); // Generate a random array
+
+            Logger.Info("MainForm initialized successfully.");
         }
 
         // Find all classes that inherit ISortEngine and add them to the ComboBox
@@ -168,6 +175,8 @@ namespace SortVisualizer
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Error loading CSV file: {0}", filePath); // Log exception details
+
                 // Display an error message if the file cannot be loaded
                 MessageBox.Show("Error loading CSV file: " + ex.Message);
             }
@@ -243,10 +252,14 @@ namespace SortVisualizer
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Error selecting/instantiating sorting algorithm.");
+
                 MessageBox.Show("Error selecting sorting algorithm: " + ex.Message);
             }
 
             if (selectedSort == null) return;
+
+            Logger.Info("Background worker started for algorithm: {0}", selectedSort?.Name ?? "Unknown");
 
             isSorting = true; // Set the flag to indicate that the array is being sorted
 
@@ -275,16 +288,22 @@ namespace SortVisualizer
 
             if (e.Cancelled)
             {
+                Logger.Warn("Sorting operation was cancelled by the user.");
+
                 // The operation was canceled
                 MessageBox.Show("Sorting was canceled.");
             }
             else if (e.Error != null)
             {
+                Logger.Error(e.Error, "Error occurred during sorting background task.");
+
                 // An error occurred during the operation
                 MessageBox.Show("An error occurred: " + e.Error.Message);
             }
             else
             {
+                Logger.Info("Sorting operation completed successfully.");
+
                 CheckSorted(); // Final check if the array is sorted
             }
             bgWorker.Dispose(); // Dispose of the background worker
@@ -344,6 +363,8 @@ namespace SortVisualizer
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Failed to open link/file.");
+
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -361,6 +382,8 @@ namespace SortVisualizer
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Failed to open link/file.");
+
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
